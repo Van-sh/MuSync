@@ -13,7 +13,7 @@
       "noEmit": true,
       "types": ["@types/bun"],
       "paths": {
-         "~api/*": ["./src/*"]
+         "~/*": ["./src/*"]
       }
    },
    "exclude": ["./hls/"]

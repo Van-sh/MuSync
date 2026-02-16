@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import Navbar from "~web/components/Navbar";
-import QueryClientProvider from "~web/components/QueryProvider";
-import ThemeProvider from "~web/components/ThemeProvider";
-import { cn } from "~web/lib/utils";
+import Navbar from "~/components/Navbar";
+import QueryClientProvider from "~/components/QueryProvider";
+import ThemeProvider from "~/components/ThemeProvider";
+import { cn } from "~/lib/utils";
 
 import "./globals.css";
 

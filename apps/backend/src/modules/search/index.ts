@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 
-import { createResponseTypes } from "~api/lib/createResponseTypes";
+import { createResponseTypes } from "~/lib/createResponseTypes";
 import { SearchModels } from "./model";
 import { Search } from "./service";
 

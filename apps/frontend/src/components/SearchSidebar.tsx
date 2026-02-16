@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import { useState } from "react";
 
-import { api } from "~web/api";
+import { api } from "~/api";
 import SearchBar from "./SearchBar";
 import SearchCard from "./SearchCard";
 

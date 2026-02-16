@@ -1,5 +1,5 @@
-import { api } from "~web/api";
-import { useCurrentlyPlayingStore } from "~web/store/currentlyPlayingStore";
+import { api } from "~/api";
+import { useCurrentlyPlayingStore } from "~/store/currentlyPlayingStore";
 
 type SearchCardProps = {
    video: NonNullable<Awaited<ReturnType<typeof api.search.get>>["data"]>[0];

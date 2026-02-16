@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 
-import { createResponseTypes } from "~api/lib/createResponseTypes";
+import { createResponseTypes } from "~/lib/createResponseTypes";
 import { QueueModels } from "./model";
 import { Queue } from "./service";
 

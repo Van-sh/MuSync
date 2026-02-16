@@ -1,6 +1,6 @@
 import { t } from "elysia";
 
-import { videoId } from "~api/lib/youtube";
+import { videoId } from "~/lib/youtube";
 
 export namespace QueueModels {
    export const playBody = t.Object({

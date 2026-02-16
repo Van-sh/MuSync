@@ -1,7 +1,7 @@
 import { existsSync } from "fs";
 
-import { FFmpeg } from "~api/lib/ffmpeg";
-import { ytdlp } from "~api/lib/ytdlp";
+import { FFmpeg } from "~/lib/ffmpeg";
+import { ytdlp } from "~/lib/ytdlp";
 import type { QueueModels } from "./model";
 
 export abstract class Queue {

@@ -1,7 +1,7 @@
 import Hls from "hls.js";
 import { useEffect, useRef } from "react";
 
-import { useCurrentlyPlayingStore } from "~web/store/currentlyPlayingStore";
+import { useCurrentlyPlayingStore } from "~/store/currentlyPlayingStore";
 
 export default function AudioPlayer() {
    const videoId = useCurrentlyPlayingStore((state) => state.videoId);

@@ -1,7 +1,7 @@
 "use client";
 
-import AudioPlayer from "~web/components/AudioPlayer";
-import Sidebar from "~web/components/Sidebar";
+import AudioPlayer from "~/components/AudioPlayer";
+import Sidebar from "~/components/Sidebar";
 
 export default function Player() {
    return (

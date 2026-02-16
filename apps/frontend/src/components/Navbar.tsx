@@ -2,7 +2,7 @@
 
 import { User } from "lucide-react";
 
-import { signIn, useSession } from "~web/auth-client";
+import { signIn, useSession } from "~/auth-client";
 import { Button } from "./ui/button";
 
 export default function Navbar() {
