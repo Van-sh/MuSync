@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 
 for (const [key, value] of Object.entries(Bun.env)) {
    if (value === "") {
@@ -6,19 +6,18 @@ for (const [key, value] of Object.entries(Bun.env)) {
    }
 }
 
+console.log(Bun.env.NODE_ENV);
+
 const envSchema = z.object({
-   PORT: z.coerce.number(),
-
-   DATABASE_URL: z.url().min(1),
-
-   BETTER_AUTH_SECRET: z.string().min(1),
-   BETTER_AUTH_URL: z.url().min(1),
-   BETTER_AUTH_PATH: z.string().startsWith("/").default("/auth"),
-
-   GOOGLE_CLIENT_ID: z.string().min(1),
-   GOOGLE_CLIENT_SECRET: z.string().min(1),
-
    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+   LOG_LEVEL: z.enum(["trace", "debug", "info", "warning", "error", "fatal"]),
+
+   PORT: z.coerce.number().default(8000).pipe(z.int()),
+
+   DB_URL: z.url(),
 });
 
-export const env = envSchema.parse(Bun.env);
+export const env = envSchema.parse({
+   LOG_LEVEL: Bun.env.NODE_ENV === "development" ? "debug" : "info",
+   ...Bun.env,
+});

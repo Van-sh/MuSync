@@ -1,5 +1,6 @@
 {
    "$schema": "https://turborepo.dev/schema.json",
+   "concurrency": "100%",
    "tasks": {
       "build": {
          "dependsOn": ["^build"],
@@ -10,11 +11,6 @@
          "cache": false,
          "persistent": true
       },
-      "lint": {
-         "dependsOn": ["^lint"]
-      },
-      "typecheck": {
-         "dependsOn": ["^typecheck"]
-      }
+      "typecheck": {}
    }
 }

@@ -2,12 +2,13 @@ packages:
   - apps/*
 
 catalog:
-  elysia: ^1.4.23
-  typescript: ^5.9.3
+  elysia: ^1.4.28
   zod: ^4.3.6
+  better-auth: ^1.6.10
+  "@typescript/native-preview": 7.0.0-dev.20260615.1
 
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
-  - unrs-resolver
-  - ytdlp-nodejs
+allowBuilds:
+  es5-ext: set this to true or false
+  esbuild: true
+
+minimumReleaseAge: 4320
