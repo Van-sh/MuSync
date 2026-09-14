@@ -11,9 +11,8 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table("user")
                     .if_not_exists()
-                    .col(pk_auto("id"))
-                    .col(string("username"))
-                    .col(string("email"))
+                    .col(uuid("id").primary_key())
+                    .col(string("username").unique_key())
                     .col(string("password"))
                     .to_owned(),
             )
@@ -22,7 +21,7 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table("post").to_owned())
+            .drop_table(Table::drop().table("user").to_owned())
             .await
     }
 }

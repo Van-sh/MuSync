@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = [".", "migration"]
+members = [".", "entity", "migration"]
 
 [dependencies]
 argon2 = "0.6.0"
@@ -12,6 +12,7 @@ axum = "0.8.9"
 axum-extra = { version = "0.12.6", features = ["erased-json", "cookie"] }
 color-eyre = "0.6.5"
 dotenvy = "0.15.7"
+entity = { version = "0.1.0", path = "entity" }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 thiserror = "2.0.20"

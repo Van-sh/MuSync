@@ -27,7 +27,9 @@ static INSTANCE: LazyLock<Env> = LazyLock::new(|| {
         .parse::<u16>()
         .unwrap_or(3435);
 
-    let db = std::env::var("DB").context("DB env var not found").unwrap();
+    let db = std::env::var("DATABASE_URL")
+        .context("DATABASE_URL env var not found")
+        .unwrap();
 
     let jwt_secret = std::env::var("JWT_SECRET")
         .context("JWT_SECRET env var not found")

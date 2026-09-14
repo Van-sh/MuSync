@@ -1,4 +1,4 @@
-use axum::{Router, extract::OriginalUri, http::StatusCode};
+use axum::{Router, extract::OriginalUri};
 use tower::ServiceBuilder;
 use tower_http::{compression::CompressionLayer, cors::CorsLayer, trace::TraceLayer};
 
