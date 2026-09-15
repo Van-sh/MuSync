@@ -1,14 +1,21 @@
+use anyhow::Result;
 use axum::{Router, extract::OriginalUri};
+use axum_macros::FromRef;
+use migration::sea_orm::DatabaseConnection;
 use tower::ServiceBuilder;
 use tower_http::{compression::CompressionLayer, cors::CorsLayer, trace::TraceLayer};
 
 use crate::{error::ApiError, features::users};
 
-#[derive(Clone)]
-pub struct AppState;
+#[derive(Clone, FromRef)]
+pub struct AppState {
+    db: DatabaseConnection,
+}
 
-pub fn router() -> Router {
-    Router::new()
+pub fn router(db: DatabaseConnection) -> Result<Router> {
+    let state = AppState { db };
+
+    Ok(Router::new()
         .without_v07_checks()
         .nest("/auth", users::router())
         .fallback(async |OriginalUri(original_uri): OriginalUri| {
@@ -20,5 +27,5 @@ pub fn router() -> Router {
                 .layer(CorsLayer::very_permissive())
                 .layer(CompressionLayer::new()),
         )
-        .with_state(AppState)
+        .with_state(state))
 }

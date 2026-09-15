@@ -3,6 +3,8 @@ mod env;
 mod error;
 mod features;
 
+use anyhow::Result;
+use sea_orm::Database;
 use tokio::net::TcpListener;
 use tracing::debug;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -10,7 +12,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use crate::env::Env;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
@@ -22,10 +24,15 @@ async fn main() {
 
     let env = Env::get();
 
+    let db = Database::connect(&env.db).await?;
+    let app = app::router(db)?;
+
     let listener = TcpListener::bind(format!("127.0.0.1:{port}", port = env.port))
         .await
         .unwrap();
 
     debug!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app::router()).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
+
+    Ok(())
 }

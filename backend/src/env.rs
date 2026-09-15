@@ -1,6 +1,6 @@
 use std::sync::LazyLock;
 
-use color_eyre::eyre::Context;
+use anyhow::Context;
 
 #[derive(Debug)]
 pub struct Env {
