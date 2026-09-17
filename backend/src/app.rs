@@ -19,7 +19,7 @@ pub fn router(db: DatabaseConnection) -> Result<Router> {
         .without_v07_checks()
         .nest("/auth", users::router())
         .fallback(async |OriginalUri(original_uri): OriginalUri| {
-            ApiError::NotFound(format!("Can't find {original_uri} on this server!"))
+            ApiError::NotFound(format!("Can't find \"{original_uri}\" on this server!"))
         })
         .layer(
             ServiceBuilder::new()
