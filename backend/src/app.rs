@@ -12,11 +12,10 @@ pub struct AppState {
     db: DatabaseConnection,
 }
 
-pub fn router(db: DatabaseConnection) -> Result<Router> {
+pub fn router(db: DatabaseConnection) -> Router {
     let state = AppState { db };
 
-    Ok(Router::new()
-        .without_v07_checks()
+    Router::new()
         .nest("/auth", users::router())
         .fallback(async |OriginalUri(original_uri): OriginalUri| {
             ApiError::NotFound(format!("Can't find \"{original_uri}\" on this server!"))
@@ -27,5 +26,5 @@ pub fn router(db: DatabaseConnection) -> Result<Router> {
                 .layer(CorsLayer::very_permissive())
                 .layer(CompressionLayer::new()),
         )
-        .with_state(state))
+        .with_state(state)
 }

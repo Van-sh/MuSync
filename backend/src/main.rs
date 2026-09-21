@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
     let db = Database::connect(ConnectOptions::new(&env.db).sqlx_logging(false).to_owned()).await?;
     Migrator::up(&db, None).await.context("")?;
 
-    let app = app::router(db)?;
+    let app = app::router(db);
 
     let listener = TcpListener::bind(format!("127.0.0.1:{port}", port = env.port))
         .await

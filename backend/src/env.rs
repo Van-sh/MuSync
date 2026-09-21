@@ -20,8 +20,6 @@ static INSTANCE: LazyLock<Env> = LazyLock::new(|| {
         .map_err(|_| tracing::debug!(".env not found"))
         .ok();
 
-    tracing::info!("test");
-
     let port: u16 = std::env::var("PORT")
         .unwrap_or_default()
         .parse::<u16>()
