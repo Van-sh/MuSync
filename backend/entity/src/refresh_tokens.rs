@@ -8,8 +8,9 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "refresh_tokens")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub token: String,
+    pub id: Uuid,
     pub user_id: Uuid,
+    pub expires_at: DateTime,
     #[sea_orm(
         belongs_to,
         from = "user_id",

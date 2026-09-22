@@ -1,6 +1,8 @@
 use anyhow::{Error, Result};
-use entity::{prelude::*, users};
-use sea_orm::{ActiveValue, DatabaseConnection, EntityTrait};
+use chrono::NaiveDateTime;
+use entity::{prelude::*, refresh_tokens, users};
+use sea_orm::{ActiveModelTrait, ActiveValue, DatabaseConnection};
+use uuid::Uuid;
 
 pub async fn find_user_by_username(
     db: &DatabaseConnection,
@@ -17,14 +19,27 @@ pub async fn create_user(
     username: String,
     hashed_password: String,
 ) -> Result<users::Model> {
-    let user = users::ActiveModel {
+    users::ActiveModel {
         username: ActiveValue::Set(username),
         password: ActiveValue::Set(hashed_password),
         ..Default::default()
-    };
+    }
+    .insert(db)
+    .await
+    .map_err(Error::new)
+}
 
-    Users::insert(user)
-        .exec_with_returning(db)
-        .await
-        .map_err(Error::new)
+pub async fn create_refresh_token(
+    db: &DatabaseConnection,
+    user_id: Uuid,
+    expires_at: NaiveDateTime,
+) -> Result<refresh_tokens::Model> {
+    refresh_tokens::ActiveModel {
+        user_id: ActiveValue::Set(user_id),
+        expires_at: ActiveValue::Set(expires_at),
+        ..Default::default()
+    }
+    .insert(db)
+    .await
+    .map_err(Error::new)
 }

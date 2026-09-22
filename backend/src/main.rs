@@ -2,6 +2,7 @@ mod app;
 mod env;
 mod error;
 mod features;
+mod prelude;
 
 use anyhow::{Context, Result};
 use migration::{Migrator, MigratorTrait};

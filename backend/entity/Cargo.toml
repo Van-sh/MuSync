@@ -7,3 +7,4 @@ edition = "2024"
 chrono = "0.4.45"
 sea-orm = "2.0.3"
 serde = { version = "1.0.229", features = ["derive"] }
+time = "0.3.55"

@@ -25,8 +25,9 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(RefreshTokens::Table)
                     .if_not_exists()
-                    .col(string(RefreshTokens::Token).primary_key())
+                    .col(uuid(RefreshTokens::Id).primary_key())
                     .col(uuid(RefreshTokens::UserId))
+                    .col(timestamp(RefreshTokens::ExpiresAt))
                     .foreign_key(
                         ForeignKey::create()
                             .from(RefreshTokens::Table, RefreshTokens::UserId)
@@ -67,6 +68,7 @@ enum Users {
 #[derive(DeriveIden)]
 enum RefreshTokens {
     Table,
-    Token,
+    Id,
     UserId,
+    ExpiresAt,
 }

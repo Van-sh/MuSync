@@ -1,14 +1,21 @@
 use anyhow::{Error, Result};
 use argon2::{Argon2, PasswordHasher};
 use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::post};
-use axum_extra::{extract::CookieJar, json};
+use axum_extra::extract::{CookieJar, cookie::Cookie};
+use chrono::{Duration, Utc};
 use sea_orm::DatabaseConnection;
 
 use crate::{
     app::AppState,
     error::ApiError,
-    features::users::{self, AuthBody},
+    features::users::{self, AccessTokenClaims, AuthBody, RefreshTokenClaims},
+    prelude::ToTimeDuration,
 };
+
+const REFRESH_TOKEN_COOKIE_NAME: &str = "musync_refresh_token";
+const REFRESH_TOKEN_DURATION: Duration = Duration::weeks(1);
+const ACCESS_TOKEN_COOKIE_NAME: &str = "musync_access_token";
+const ACCESS_TOKEN_DURATION: Duration = Duration::minutes(5);
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -38,5 +45,24 @@ async fn register(
 
     let user = users::repo::create_user(&db, username, hashed_password).await?;
 
-    Ok((StatusCode::OK, json!({"test": "test"})))
+    let now = Utc::now().naive_utc();
+
+    let refresh_token =
+        users::repo::create_refresh_token(&db, user.id, now + REFRESH_TOKEN_DURATION).await?;
+    let refresh_token = RefreshTokenClaims::from(refresh_token).encode_jwt()?;
+    let refresh_token = Cookie::build((REFRESH_TOKEN_COOKIE_NAME, refresh_token))
+        .http_only(true)
+        .max_age(REFRESH_TOKEN_DURATION.to_time_duration());
+
+    let access_token = AccessTokenClaims {
+        sub: user.id,
+        username: user.username,
+        exp: now + ACCESS_TOKEN_DURATION,
+    }
+    .encode_jwt()?;
+    let access_token = Cookie::build((ACCESS_TOKEN_COOKIE_NAME, access_token))
+        .http_only(true)
+        .max_age(ACCESS_TOKEN_DURATION.to_time_duration());
+
+    Ok((StatusCode::OK, jar.add(refresh_token).add(access_token)))
 }

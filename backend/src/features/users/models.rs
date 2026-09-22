@@ -1,7 +1,88 @@
-use serde::Deserialize;
+use anyhow::{Result, anyhow};
+use chrono::NaiveDateTime;
+use jsonwebtoken::{EncodingKey, Header};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::env::Env;
 
 #[derive(Deserialize)]
 pub struct AuthBody {
     pub username: String,
     pub password: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AccessTokenClaims {
+    pub sub: Uuid,
+    pub username: String,
+    #[serde(with = "jwt_numeric_date")]
+    pub exp: NaiveDateTime,
+}
+
+impl AccessTokenClaims {
+    pub fn encode_jwt(&self) -> Result<String> {
+        let env = Env::get();
+
+        jsonwebtoken::encode(
+            &Header::default(),
+            self,
+            &EncodingKey::from_secret(env.jwt_secret.as_bytes()),
+        )
+        .map_err(|_| anyhow!("Failed to create access token"))
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RefreshTokenClaims {
+    pub sub: Uuid,
+    pub jti: Uuid,
+    #[serde(with = "jwt_numeric_date")]
+    pub exp: NaiveDateTime,
+}
+
+impl RefreshTokenClaims {
+    pub fn encode_jwt(&self) -> Result<String> {
+        let env = Env::get();
+
+        jsonwebtoken::encode(
+            &Header::default(),
+            self,
+            &EncodingKey::from_secret(env.jwt_secret.as_bytes()),
+        )
+        .map_err(|_| anyhow!("Failed to create refresh token"))
+    }
+}
+
+impl From<entity::refresh_tokens::Model> for RefreshTokenClaims {
+    fn from(value: entity::refresh_tokens::Model) -> Self {
+        Self {
+            sub: value.user_id,
+            jti: value.id,
+            exp: value.expires_at,
+        }
+    }
+}
+
+mod jwt_numeric_date {
+    use chrono::{DateTime, NaiveDateTime};
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(date: &NaiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let timestamp = date.and_utc().timestamp();
+        serializer.serialize_i64(timestamp)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let time = DateTime::from_timestamp(i64::deserialize(deserializer)?, 0)
+            .ok_or_else(|| serde::de::Error::custom("invalid Unix timestamp value"));
+
+        time.map(|t| t.naive_utc())
+    }
 }

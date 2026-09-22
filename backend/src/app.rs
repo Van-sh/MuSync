@@ -1,4 +1,3 @@
-use anyhow::Result;
 use axum::{Router, extract::OriginalUri};
 use axum_macros::FromRef;
 use migration::sea_orm::DatabaseConnection;
