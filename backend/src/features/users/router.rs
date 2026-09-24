@@ -1,5 +1,5 @@
-use anyhow::{Error, Result};
-use argon2::{Argon2, PasswordHasher};
+use anyhow::Error;
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::post};
 use axum_extra::extract::{CookieJar, cookie::Cookie};
 use chrono::{Duration, Utc};
@@ -8,7 +8,7 @@ use sea_orm::DatabaseConnection;
 use crate::{
     app::AppState,
     error::ApiError,
-    features::users::{self, AccessTokenClaims, AuthBody, RefreshTokenClaims},
+    features::users::{self, AccessTokenClaims, LoginBody, RefreshTokenClaims, RegisterBody},
     prelude::ToTimeDuration,
 };
 
@@ -21,7 +21,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .without_v07_checks()
         .route("/register", post(register))
-    // .route("/login", post(todo!()))
+        .route("/login", post(login))
     // .route("/logout", post(todo!()))
     // .route("/whoami", get(todo!()))
     // .route("/token", get(todo!()))
@@ -30,21 +30,59 @@ pub fn router() -> Router<AppState> {
 async fn register(
     State(db): State<DatabaseConnection>,
     jar: CookieJar,
-    Json(AuthBody { username, password }): Json<AuthBody>,
+    Json(RegisterBody {
+        username,
+        password,
+        confirm_password,
+    }): Json<RegisterBody>,
 ) -> Result<impl IntoResponse, ApiError> {
+    if password != confirm_password {
+        return Err(ApiError::BadRequest(
+            "Password and Confirm Password must be same".into(),
+        ));
+    }
+
     let user = users::repo::find_user_by_username(&db, &username).await?;
     if user.is_some() {
         return Err(ApiError::Forbidden(format!("Username {username} is taken")));
     }
 
-    let argon2 = Argon2::default();
-    let hashed_password = argon2
+    let hashed_password = Argon2::default()
         .hash_password(password.as_bytes())
         .map_err(Error::new)?
         .to_string();
 
     let user = users::repo::create_user(&db, username, hashed_password).await?;
 
+    sign_jwt(db, user, jar).await
+}
+
+async fn login(
+    State(db): State<DatabaseConnection>,
+    jar: CookieJar,
+    Json(LoginBody { username, password }): Json<LoginBody>,
+) -> Result<impl IntoResponse, ApiError> {
+    let user = users::repo::find_user_by_username(&db, &username).await?;
+    let Some(user) = user else {
+        return Err(ApiError::NotFound(format!("User {username} doesn't exist")));
+    };
+
+    let verify = Argon2::default().verify_password(
+        password.as_bytes(),
+        &PasswordHash::new(&user.password).map_err(Error::new)?,
+    );
+    if verify.is_err() {
+        return Err(ApiError::BadRequest("Invaldi username or password".into()));
+    }
+
+    sign_jwt(db, user, jar).await
+}
+
+async fn sign_jwt(
+    db: DatabaseConnection,
+    user: entity::users::Model,
+    jar: CookieJar,
+) -> Result<impl IntoResponse, ApiError> {
     let now = Utc::now().naive_utc();
 
     let refresh_token =

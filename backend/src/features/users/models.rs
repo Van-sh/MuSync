@@ -7,7 +7,15 @@ use uuid::Uuid;
 use crate::env::Env;
 
 #[derive(Deserialize)]
-pub struct AuthBody {
+pub struct RegisterBody {
+    pub username: String,
+    pub password: String,
+    #[serde(rename = "camelCase")]
+    pub confirm_password: String,
+}
+
+#[derive(Deserialize)]
+pub struct LoginBody {
     pub username: String,
     pub password: String,
 }
