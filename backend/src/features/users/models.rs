@@ -1,10 +1,13 @@
 use anyhow::{Result, anyhow};
 use chrono::NaiveDateTime;
-use jsonwebtoken::{EncodingKey, Header};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::env::Env;
+use crate::{
+    env::Env,
+    error::{ApiError, ApiResult},
+};
 
 #[derive(Deserialize)]
 pub struct RegisterBody {
@@ -59,6 +62,25 @@ impl RefreshTokenClaims {
             &EncodingKey::from_secret(env.jwt_secret.as_bytes()),
         )
         .map_err(|_| anyhow!("Failed to create refresh token"))
+    }
+
+    pub fn decode_jwt(token: &[u8]) -> ApiResult<Self> {
+        let env = Env::get();
+        let decode = jsonwebtoken::decode::<Self>(
+            token,
+            &DecodingKey::from_secret(env.jwt_secret.as_bytes()),
+            &Validation::default(),
+        );
+        match decode {
+            Ok(data) => Ok(data.claims),
+            Err(error) => {
+                if error.kind() == &jsonwebtoken::errors::ErrorKind::ExpiredSignature {
+                    Err(ApiError::Unauthorized)
+                } else {
+                    Err(anyhow!(error).into())
+                }
+            }
+        }
     }
 }
 

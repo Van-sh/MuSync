@@ -1,7 +1,7 @@
 use anyhow::{Error, Result};
 use chrono::NaiveDateTime;
 use entity::{prelude::*, refresh_tokens, users};
-use sea_orm::{ActiveModelTrait, ActiveValue, DatabaseConnection};
+use sea_orm::{ActiveModelTrait, ActiveValue, DatabaseConnection, DeleteResult, EntityTrait};
 use uuid::Uuid;
 
 pub async fn find_user_by_username(
@@ -42,4 +42,11 @@ pub async fn create_refresh_token(
     .insert(db)
     .await
     .map_err(Error::new)
+}
+
+pub async fn delete_refresh_token(db: &DatabaseConnection, token: Uuid) -> Result<DeleteResult> {
+    RefreshTokens::delete_by_id(token)
+        .exec(db)
+        .await
+        .map_err(Error::new)
 }

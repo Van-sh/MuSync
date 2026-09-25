@@ -2,10 +2,14 @@ use axum::{http::StatusCode, response::IntoResponse};
 use axum_extra::json;
 use thiserror::Error;
 
+pub type ApiResult<T> = Result<T, ApiError>;
+
 #[derive(Debug, Error)]
 pub enum ApiError {
     #[error("Bad Request: {0}")]
     BadRequest(String),
+    #[error("Unauthorized")]
+    Unauthorized,
     #[error("Forbidden: {0}")]
     Forbidden(String),
     #[error("Not Found: {0}")]
@@ -18,14 +22,23 @@ pub enum ApiError {
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         match self {
-            ApiError::BadRequest(message) => (StatusCode::BAD_REQUEST, json!({"message": message})),
-            ApiError::Forbidden(message) => (StatusCode::FORBIDDEN, json!({"message": message})),
-            ApiError::NotFound(message) => (StatusCode::NOT_FOUND, json!({"message": message})),
+            ApiError::BadRequest(message) => {
+                (StatusCode::BAD_REQUEST, json!({"message": message})).into_response()
+            }
+            ApiError::Unauthorized => {
+                (StatusCode::UNAUTHORIZED, json!({"message": "Unauthorized"})).into_response()
+            }
+            ApiError::Forbidden(message) => {
+                (StatusCode::FORBIDDEN, json!({"message": message})).into_response()
+            }
+            ApiError::NotFound(message) => {
+                (StatusCode::NOT_FOUND, json!({"message": message})).into_response()
+            }
             ApiError::InternalError(report) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 json!({"message": format!("Something went wrong: {report}" )}),
-            ),
+            )
+                .into_response(),
         }
-        .into_response()
     }
 }

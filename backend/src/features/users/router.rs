@@ -7,7 +7,7 @@ use sea_orm::DatabaseConnection;
 
 use crate::{
     app::AppState,
-    error::ApiError,
+    error::{ApiError, ApiResult},
     features::users::{self, AccessTokenClaims, LoginBody, RefreshTokenClaims, RegisterBody},
     prelude::ToTimeDuration,
 };
@@ -22,7 +22,7 @@ pub fn router() -> Router<AppState> {
         .without_v07_checks()
         .route("/register", post(register))
         .route("/login", post(login))
-    // .route("/logout", post(todo!()))
+        .route("/logout", post(logout))
     // .route("/whoami", get(todo!()))
     // .route("/token", get(todo!()))
 }
@@ -35,7 +35,7 @@ async fn register(
         password,
         confirm_password,
     }): Json<RegisterBody>,
-) -> Result<impl IntoResponse, ApiError> {
+) -> ApiResult<impl IntoResponse> {
     if password != confirm_password {
         return Err(ApiError::BadRequest(
             "Password and Confirm Password must be same".into(),
@@ -61,7 +61,7 @@ async fn login(
     State(db): State<DatabaseConnection>,
     jar: CookieJar,
     Json(LoginBody { username, password }): Json<LoginBody>,
-) -> Result<impl IntoResponse, ApiError> {
+) -> ApiResult<impl IntoResponse> {
     let user = users::repo::find_user_by_username(&db, &username).await?;
     let Some(user) = user else {
         return Err(ApiError::NotFound(format!("User {username} doesn't exist")));
@@ -78,11 +78,28 @@ async fn login(
     sign_jwt(db, user, jar).await
 }
 
+async fn logout(
+    State(db): State<DatabaseConnection>,
+    jar: CookieJar,
+) -> ApiResult<impl IntoResponse> {
+    let Some(refresh_token) = jar.get(REFRESH_TOKEN_COOKIE_NAME) else {
+        return Err(ApiError::Unauthorized);
+    };
+    let refresh_token = RefreshTokenClaims::decode_jwt(refresh_token.value().as_bytes())?;
+    let _ = users::repo::delete_refresh_token(&db, refresh_token.jti).await;
+
+    Ok((
+        StatusCode::OK,
+        jar.remove(REFRESH_TOKEN_COOKIE_NAME)
+            .remove(ACCESS_TOKEN_COOKIE_NAME),
+    ))
+}
+
 async fn sign_jwt(
     db: DatabaseConnection,
     user: entity::users::Model,
     jar: CookieJar,
-) -> Result<impl IntoResponse, ApiError> {
+) -> ApiResult<impl IntoResponse> {
     let now = Utc::now().naive_utc();
 
     let refresh_token =
