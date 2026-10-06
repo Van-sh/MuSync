@@ -1,17 +1,20 @@
 mod app;
-mod env;
+mod auth;
+mod config;
 mod error;
 mod features;
-mod prelude;
+
+use std::sync::Arc;
 
 use anyhow::{Context, Result};
+use better_auth::{AuthConfig, BetterAuth, seaorm::SeaOrmStore};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database};
 use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::env::Env;
+use crate::{app::AppState, auth::AppAuthSchema, config::Config};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -23,14 +26,29 @@ async fn main() -> Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let env = Env::get();
+    let config = Config::get();
 
-    let db = Database::connect(ConnectOptions::new(&env.db).sqlx_logging(false).to_owned()).await?;
+    let db = Database::connect(
+        ConnectOptions::new(&config.db)
+            .sqlx_logging(false)
+            .to_owned(),
+    )
+    .await?;
     Migrator::up(&db, None).await.context("")?;
 
-    let app = app::router(db);
+    let auth_config = AuthConfig::new(&config.better_auth_secret).base_path("/auth");
+    let store = SeaOrmStore::<AppAuthSchema>::new(auth_config.clone(), db.clone());
 
-    let listener = TcpListener::bind(format!("127.0.0.1:{port}", port = env.port))
+    let auth = Arc::new(
+        BetterAuth::<AppAuthSchema>::new(auth_config)
+            .store(store)
+            .build()
+            .await?,
+    );
+
+    let app = app::router(AppState { db, auth });
+
+    let listener = TcpListener::bind(format!("127.0.0.1:{port}", port = config.port))
         .await
         .unwrap();
 

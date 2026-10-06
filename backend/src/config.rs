@@ -3,19 +3,19 @@ use std::sync::LazyLock;
 use anyhow::Context;
 
 #[derive(Debug)]
-pub struct Env {
+pub struct Config {
     pub port: u16,
     pub db: String,
-    pub jwt_secret: String,
+    pub better_auth_secret: String,
 }
 
-impl Env {
+impl Config {
     pub fn get() -> &'static LazyLock<Self> {
         &INSTANCE
     }
 }
 
-static INSTANCE: LazyLock<Env> = LazyLock::new(|| {
+static INSTANCE: LazyLock<Config> = LazyLock::new(|| {
     dotenvy::dotenv()
         .map_err(|_| tracing::debug!(".env not found"))
         .ok();
@@ -29,13 +29,13 @@ static INSTANCE: LazyLock<Env> = LazyLock::new(|| {
         .context("DATABASE_URL env var not found")
         .unwrap();
 
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .context("JWT_SECRET env var not found")
+    let better_auth_secret = std::env::var("BETTER_AUTH_SECRET")
+        .context("BETTER_AUTH_SECRET env var not found")
         .unwrap();
 
-    Env {
+    Config {
         port,
         db,
-        jwt_secret,
+        better_auth_secret,
     }
 });

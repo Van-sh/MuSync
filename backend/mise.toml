@@ -1,7 +1,7 @@
 [tools]
-"cargo:bacon" = "latest"
-"cargo:sea-orm-cli" = "latest"
-rust = "latest"
+"cargo:bacon" = "3.26.0"
+"cargo:sea-orm-cli" = "2.0.4"
+rust = "1.98.1"
 
 [tasks.start]
 run = "cargo run"
@@ -19,7 +19,7 @@ run = "mise run migration:up && mise run sea:generate"
 [tasks."migration:generate"]
 description = "Apply Migrations"
 usage = 'arg "<migration_name>" help="Migration Name"'
-run = "sea-orm-cli migrate generate ${usage_migration_name}"
+run = "sea migrate generate ${usage_migration_name}"
 
 [tasks."migration:up"]
 description = "Apply Migrations"
@@ -31,4 +31,4 @@ run = "cargo run -p migration -- down"
 
 [tasks."sea:generate"]
 description = "Generate models from DB"
-run = "sea generate entity --output-dir ./entity/src/ --lib --entity-format dense --with-serde both --experimental-preserve-user-modifications"
+run = """sea generate entity --output-dir ./entity/src/ --lib --entity-format compact --with-serde both --experimental-preserve-user-modifications"""
