@@ -1,4 +1,4 @@
-use std::sync::LazyLock;
+use std::{env, sync::LazyLock};
 
 use anyhow::Context;
 
@@ -7,6 +7,9 @@ pub struct Config {
     pub port: u16,
     pub db: String,
     pub better_auth_secret: String,
+
+    pub google_client_id: String,
+    pub google_client_secret: String,
 }
 
 impl Config {
@@ -20,22 +23,33 @@ static INSTANCE: LazyLock<Config> = LazyLock::new(|| {
         .map_err(|_| tracing::debug!(".env not found"))
         .ok();
 
-    let port: u16 = std::env::var("PORT")
+    let port: u16 = env::var("PORT")
         .unwrap_or_default()
         .parse::<u16>()
         .unwrap_or(3435);
 
-    let db = std::env::var("DATABASE_URL")
+    let db = env::var("DATABASE_URL")
         .context("DATABASE_URL env var not found")
         .unwrap();
 
-    let better_auth_secret = std::env::var("BETTER_AUTH_SECRET")
+    let better_auth_secret = env::var("BETTER_AUTH_SECRET")
         .context("BETTER_AUTH_SECRET env var not found")
+        .unwrap();
+
+    let google_client_id = env::var("GOOGLE_CLIENT_ID")
+        .context("GOOGLE_CLIENT_ID env var not found")
+        .unwrap();
+
+    let google_client_secret = env::var("GOOGLE_CLIENT_SECRET")
+        .context("GOOGLE_CLIENT_SECRET env var not found")
         .unwrap();
 
     Config {
         port,
         db,
         better_auth_secret,
+
+        google_client_id,
+        google_client_secret,
     }
 });

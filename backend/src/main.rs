@@ -4,17 +4,14 @@ mod config;
 mod error;
 mod features;
 
-use std::sync::Arc;
-
 use anyhow::{Context, Result};
-use better_auth::{AuthConfig, BetterAuth, seaorm::SeaOrmStore};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database};
 use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{app::AppState, auth::AppAuthSchema, config::Config};
+use crate::{app::AppState, config::Config};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -36,15 +33,7 @@ async fn main() -> Result<()> {
     .await?;
     Migrator::up(&db, None).await.context("")?;
 
-    let auth_config = AuthConfig::new(&config.better_auth_secret).base_path("/auth");
-    let store = SeaOrmStore::<AppAuthSchema>::new(auth_config.clone(), db.clone());
-
-    let auth = Arc::new(
-        BetterAuth::<AppAuthSchema>::new(auth_config)
-            .store(store)
-            .build()
-            .await?,
-    );
+    let auth = auth::get_auth(db.clone()).await?;
 
     let app = app::router(AppState { db, auth });
 
