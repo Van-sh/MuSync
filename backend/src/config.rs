@@ -6,7 +6,10 @@ use anyhow::Context;
 pub struct Config {
     pub port: u16,
     pub db: String,
+
     pub better_auth_secret: String,
+    pub better_auth_base_url: String,
+    pub better_auth_base_path: String,
 
     pub google_client_id: String,
     pub google_client_secret: String,
@@ -36,6 +39,11 @@ static INSTANCE: LazyLock<Config> = LazyLock::new(|| {
         .context("BETTER_AUTH_SECRET env var not found")
         .unwrap();
 
+    let better_auth_base_url =
+        env::var("BETTER_AUTH_BASE_URL").unwrap_or_else(|_| "http://localhost:3435".to_string());
+
+    let better_auth_base_path = "/auth".to_string();
+
     let google_client_id = env::var("GOOGLE_CLIENT_ID")
         .context("GOOGLE_CLIENT_ID env var not found")
         .unwrap();
@@ -47,7 +55,10 @@ static INSTANCE: LazyLock<Config> = LazyLock::new(|| {
     Config {
         port,
         db,
+
         better_auth_secret,
+        better_auth_base_url,
+        better_auth_base_path,
 
         google_client_id,
         google_client_secret,
