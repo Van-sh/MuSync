@@ -1,7 +1,7 @@
 [tools]
 "cargo:bacon" = "3.26.0"
 "cargo:sea-orm-cli" = "2.0.4"
-rust = "1.98.1"
+rust = "1.99.1"
 
 [tasks.start]
 run = "cargo run"

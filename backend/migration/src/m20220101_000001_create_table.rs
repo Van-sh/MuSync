@@ -62,8 +62,12 @@ impl MigrationTrait for Migration {
                     .col(string_null(Accounts::AccessToken))
                     .col(string_null(Accounts::RefreshToken))
                     .col(string_null(Accounts::IdToken))
-                    .col(timestamp_with_time_zone_null(Accounts::AccessTokenExpiresAt))
-                    .col(timestamp_with_time_zone_null(Accounts::RefreshTokenExpiresAt))
+                    .col(timestamp_with_time_zone_null(
+                        Accounts::AccessTokenExpiresAt,
+                    ))
+                    .col(timestamp_with_time_zone_null(
+                        Accounts::RefreshTokenExpiresAt,
+                    ))
                     .col(string_null(Accounts::Scope))
                     .col(string_null(Accounts::Password))
                     .col(timestamp_with_time_zone_default_now(Accounts::CreatedAt))
@@ -91,8 +95,12 @@ impl MigrationTrait for Migration {
                     .col(string(Verifications::Identifier))
                     .col(string(Verifications::Value))
                     .col(timestamp_with_time_zone(Verifications::ExpiresAt))
-                    .col(timestamp_with_time_zone_default_now(Verifications::CreatedAt))
-                    .col(timestamp_with_time_zone_default_now(Verifications::UpdatedAt))
+                    .col(timestamp_with_time_zone_default_now(
+                        Verifications::CreatedAt,
+                    ))
+                    .col(timestamp_with_time_zone_default_now(
+                        Verifications::UpdatedAt,
+                    ))
                     .to_owned(),
             )
             .await?;

@@ -10,7 +10,7 @@ use better_auth::{
 use entity::{accounts, sessions, users, verifications};
 use sea_orm::DatabaseConnection;
 
-use crate::config::Config;
+use crate::config::Settings;
 
 pub struct AppAuthSchema;
 
@@ -22,11 +22,11 @@ impl AuthSchema for AppAuthSchema {
 }
 
 pub async fn get_auth(db: DatabaseConnection) -> Result<Arc<BetterAuth<AppAuthSchema>>> {
-    let config = Config::get();
+    let settings = Settings::get();
 
-    let mut auth_config = AuthConfig::new(&config.better_auth_secret)
-        .base_url(&config.better_auth_base_url)
-        .base_path(&config.better_auth_base_path)
+    let mut auth_config = AuthConfig::new(&settings.better_auth_secret)
+        .base_url(&settings.better_auth_base_url)
+        .base_path(&settings.better_auth_base_path)
         .trusted_origins(vec!["http://localhost:3000".to_string()]);
     auth_config.session.cookie_same_site = SameSite::None;
 
@@ -38,7 +38,7 @@ pub async fn get_auth(db: DatabaseConnection) -> Result<Arc<BetterAuth<AppAuthSc
             .plugin(SessionManagementPlugin::new())
             .plugin(OAuthPlugin::new().add_provider(
                 "google",
-                OAuthProvider::google(&config.google_client_id, &config.google_client_secret),
+                OAuthProvider::google(&settings.google_client_id, &settings.google_client_secret),
             ))
             .build()
             .await?,

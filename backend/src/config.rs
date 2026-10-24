@@ -1,66 +1,55 @@
-use std::{env, sync::LazyLock};
+use std::sync::LazyLock;
 
 use anyhow::Context;
+use config::{Config, Environment};
+use serde::Deserialize;
 
-#[derive(Debug)]
-pub struct Config {
+#[derive(Debug, Deserialize)]
+pub struct Settings {
+    #[serde(default = "default_port")]
     pub port: u16,
-    pub db: String,
+    pub database_url: String,
 
     pub better_auth_secret: String,
+    #[serde(default = "default_better_auth_base_url")]
     pub better_auth_base_url: String,
+    #[serde(skip, default = "default_better_auth_base_path")]
     pub better_auth_base_path: String,
 
     pub google_client_id: String,
     pub google_client_secret: String,
 }
 
-impl Config {
+impl Settings {
     pub fn get() -> &'static LazyLock<Self> {
+        static INSTANCE: LazyLock<Settings> = LazyLock::new(|| {
+            dotenvy::dotenv()
+                .map_err(|_| tracing::debug!(".env not found"))
+                .ok();
+
+            let s = Config::builder()
+                .add_source(Environment::default())
+                .build()
+                .context("Something went wrong while initialising Config")
+                .unwrap();
+
+            s.try_deserialize()
+                .context("Failed to parse Settings")
+                .unwrap()
+        });
+
         &INSTANCE
     }
 }
 
-static INSTANCE: LazyLock<Config> = LazyLock::new(|| {
-    dotenvy::dotenv()
-        .map_err(|_| tracing::debug!(".env not found"))
-        .ok();
+fn default_port() -> u16 {
+    3435
+}
 
-    let port: u16 = env::var("PORT")
-        .unwrap_or_default()
-        .parse::<u16>()
-        .unwrap_or(3435);
+fn default_better_auth_base_url() -> String {
+    "http://localhost:3435".to_string()
+}
 
-    let db = env::var("DATABASE_URL")
-        .context("DATABASE_URL env var not found")
-        .unwrap();
-
-    let better_auth_secret = env::var("BETTER_AUTH_SECRET")
-        .context("BETTER_AUTH_SECRET env var not found")
-        .unwrap();
-
-    let better_auth_base_url =
-        env::var("BETTER_AUTH_BASE_URL").unwrap_or_else(|_| "http://localhost:3435".to_string());
-
-    let better_auth_base_path = "/auth".to_string();
-
-    let google_client_id = env::var("GOOGLE_CLIENT_ID")
-        .context("GOOGLE_CLIENT_ID env var not found")
-        .unwrap();
-
-    let google_client_secret = env::var("GOOGLE_CLIENT_SECRET")
-        .context("GOOGLE_CLIENT_SECRET env var not found")
-        .unwrap();
-
-    Config {
-        port,
-        db,
-
-        better_auth_secret,
-        better_auth_base_url,
-        better_auth_base_path,
-
-        google_client_id,
-        google_client_secret,
-    }
-});
+fn default_better_auth_base_path() -> String {
+    "/auth".to_string()
+}

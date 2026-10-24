@@ -11,7 +11,7 @@ use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{app::AppState, config::Config};
+use crate::{app::AppState, config::Settings};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -23,10 +23,10 @@ async fn main() -> Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let config = Config::get();
+    let settings = Settings::get();
 
     let db = Database::connect(
-        ConnectOptions::new(&config.db)
+        ConnectOptions::new(&settings.database_url)
             .sqlx_logging(false)
             .to_owned(),
     )
@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
 
     let app = app::router(AppState { db, auth });
 
-    let listener = TcpListener::bind(format!("127.0.0.1:{port}", port = config.port))
+    let listener = TcpListener::bind(format!("0.0.0.0:{port}", port = settings.port))
         .await
         .unwrap();
 
