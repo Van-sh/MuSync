@@ -1,2 +1,21 @@
 [tools]
 bun = "1.4.3"
+
+[tasks.dev]
+description = "Start the frontend development server"
+run = "bun run dev"
+
+[tasks.build]
+description = "Build the frontend"
+run = "bun run build"
+
+[tasks.check]
+description = "Run frontend formatting, lint, and type checks"
+run = "bun run check:all"
+
+[tasks.format]
+description = "Format frontend code"
+run = "bun run format"
+
+[tasks.clean]
+run = "rm -rf ./.output/ ./node_modules/"

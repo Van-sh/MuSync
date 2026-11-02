@@ -20,7 +20,10 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .without_v07_checks()
         .route("/health", get(health))
-        .nest("/auth", state.auth.clone().axum_router_with_state())
+        .nest(
+            "/api/v1",
+            Router::new().nest("/auth", state.auth.clone().axum_router_with_state()),
+        )
         .fallback(async |OriginalUri(original_uri): OriginalUri| {
             ApiError::NotFound(format!("Can't find \"{original_uri}\" on this server!"))
         })

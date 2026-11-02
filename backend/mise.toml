@@ -3,6 +3,18 @@
 "cargo:sea-orm-cli" = "2.0.4"
 rust = "1.99.1"
 
+[tasks.dev]
+description = "Start bacon with clippy on backend"
+run = "bacon --headless -j clippy-all"
+
+[tasks."dev:run"]
+description = "Start the backend development server"
+run = "bacon --headless -j run-long"
+
+[tasks.build]
+description = "Build the backend"
+run = "cargo build"
+
 [tasks.start]
 run = "cargo run"
 
@@ -11,6 +23,9 @@ run = "cargo clippy"
 
 [tasks.format]
 run = "cargo fmt"
+
+[tasks.clean]
+run = "cargo clean"
 
 [tasks.setup]
 description = "Initial setup"

@@ -1,0 +1,34 @@
+min_version = "2026.10.0"
+monorepo_root = true
+
+[monorepo]
+config_roots = ["frontend", "backend"]
+
+
+[tasks.dev]
+description = "Run development tasks for every project"
+depends = ["//*:dev"]
+
+[tasks."dev:run"]
+description = "Run the frontend and backend servers"
+depends = ["//backend:dev:run", "//frontend:dev"]
+
+[tasks.build]
+description = "Build every project"
+depends = ["//*:build"]
+
+[tasks.check]
+description = "Check every project"
+depends = ["//*:check"]
+
+[tasks.format]
+description = "Format every project"
+depends = ["//*:format"]
+
+[tasks.clean]
+description = "Clean every project"
+depends = ["//*:clean"]
+
+[tasks.default]
+description = "Run all workspace checks"
+depends = ["//:check"]
