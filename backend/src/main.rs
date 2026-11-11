@@ -1,8 +1,7 @@
 mod app;
-mod auth;
-mod config;
 mod error;
 mod features;
+mod settings;
 
 use anyhow::{Context, Result};
 use migration::{Migrator, MigratorTrait};
@@ -11,7 +10,7 @@ use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{app::AppState, config::Settings};
+use crate::{app::AppState, features::{auth::Auth, rooms::manager::RoomManager}, settings::Settings};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -33,9 +32,11 @@ async fn main() -> Result<()> {
     .await?;
     Migrator::up(&db, None).await.context("")?;
 
-    let auth = auth::get_auth(db.clone()).await?;
+    let auth = Auth::get(db.clone()).await?;
 
-    let app = app::router(AppState { db, auth });
+    let room_manager = RoomManager::new();
+
+    let app = app::router(AppState { db, auth, room_manager });
 
     let listener = TcpListener::bind(format!("0.0.0.0:{port}", port = settings.port))
         .await

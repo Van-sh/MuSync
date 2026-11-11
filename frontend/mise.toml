@@ -18,4 +18,4 @@ description = "Format frontend code"
 run = "bun run format"
 
 [tasks.clean]
-run = "rm -rf ./.output/ ./node_modules/"
+run = "rm -rf ./.output/ ./.tanstack/ ./node_modules/"
