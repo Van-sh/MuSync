@@ -3,6 +3,10 @@
 pub mod prelude;
 
 pub mod accounts;
+pub mod room_commands;
+pub mod room_members;
+pub mod room_queue_items;
+pub mod rooms;
 pub mod sessions;
 pub mod users;
 pub mod verifications;

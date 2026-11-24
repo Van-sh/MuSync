@@ -12,6 +12,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as AppRoomRoomIdRouteImport } from './routes/_app/room/$roomId'
 
 const AppIndexLazyRouteImport = createFileRoute('/_app/')()
 const AppLoginLazyRouteImport = createFileRoute('/_app/login')()
@@ -30,27 +31,35 @@ const AppLoginLazyRoute = AppLoginLazyRouteImport.update({
   path: '/login',
   getParentRoute: () => AppRouteRoute,
 } as any).lazy(() => import('./routes/_app/login.lazy').then((d) => d.Route))
+const AppRoomRoomIdRoute = AppRoomRoomIdRouteImport.update({
+  id: '/room/$roomId',
+  path: '/room/$roomId',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexLazyRoute
   '/login': typeof AppLoginLazyRoute
+  '/room/$roomId': typeof AppRoomRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof AppLoginLazyRoute
   '/': typeof AppIndexLazyRoute
+  '/room/$roomId': typeof AppRoomRoomIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteRouteWithChildren
   '/_app/login': typeof AppLoginLazyRoute
   '/_app/': typeof AppIndexLazyRoute
+  '/_app/room/$roomId': typeof AppRoomRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths: '/' | '/login' | '/room/$roomId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/'
-  id: '__root__' | '/_app' | '/_app/login' | '/_app/'
+  to: '/login' | '/' | '/room/$roomId'
+  id: '__root__' | '/_app' | '/_app/login' | '/_app/' | '/_app/room/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -80,17 +89,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLoginLazyRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/room/$roomId': {
+      id: '/_app/room/$roomId'
+      path: '/room/$roomId'
+      fullPath: '/room/$roomId'
+      preLoaderRoute: typeof AppRoomRoomIdRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
   }
 }
 
 interface AppRouteRouteChildren {
   AppLoginLazyRoute: typeof AppLoginLazyRoute
   AppIndexLazyRoute: typeof AppIndexLazyRoute
+  AppRoomRoomIdRoute: typeof AppRoomRoomIdRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppLoginLazyRoute: AppLoginLazyRoute,
   AppIndexLazyRoute: AppIndexLazyRoute,
+  AppRoomRoomIdRoute: AppRoomRoomIdRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(

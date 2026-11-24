@@ -13,7 +13,7 @@ pub struct Settings {
     pub better_auth_secret: String,
     #[serde(default = "default_better_auth_base_url")]
     pub better_auth_base_url: String,
-    #[serde(skip, default = "default_better_auth_base_path")]
+    #[serde(default = "default_better_auth_base_path")]
     pub better_auth_base_path: String,
 
     pub google_client_id: String,
@@ -51,5 +51,5 @@ fn default_better_auth_base_url() -> String {
 }
 
 fn default_better_auth_base_path() -> String {
-    "/auth".to_string()
+    "/api/v1/auth".to_string()
 }

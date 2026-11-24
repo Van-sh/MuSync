@@ -4,7 +4,7 @@ import { env } from "~/env";
 
 export const authClient = createAuthClient({
    baseURL: env.VITE_API_URL,
-   basePath: "/auth",
+   basePath: "/api/v1/auth",
    sessionOptions: {
       refetchOnWindowFocus: false,
    },

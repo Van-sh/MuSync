@@ -26,7 +26,6 @@ pub struct AppState {
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .without_v07_checks()
         .route("/health", get(health))
         .nest(
             "/api/v1",

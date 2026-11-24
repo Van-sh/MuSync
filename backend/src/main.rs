@@ -10,7 +10,11 @@ use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{app::AppState, features::{auth::Auth, rooms::manager::RoomManager}, settings::Settings};
+use crate::{
+    app::AppState,
+    features::{auth::Auth, rooms::manager::RoomManager},
+    settings::Settings,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -36,7 +40,11 @@ async fn main() -> Result<()> {
 
     let room_manager = RoomManager::new();
 
-    let app = app::router(AppState { db, auth, room_manager });
+    let app = app::router(AppState {
+        db,
+        auth,
+        room_manager,
+    });
 
     let listener = TcpListener::bind(format!("0.0.0.0:{port}", port = settings.port))
         .await
